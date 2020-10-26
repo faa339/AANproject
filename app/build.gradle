@@ -3,7 +3,7 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 30
     buildToolsVersion "30.0.2"
-
+    ndkVersion "21.0.6113669"
 
     defaultConfig {
         applicationId "com.b31project.aanproject"
@@ -31,4 +31,5 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
     implementation ('com.mapbox.mapboxsdk:mapbox-android-sdk:9.5.0')
+    implementation 'com.google.android.gms:play-services-location:17.1.0'
 }
