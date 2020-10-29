@@ -65,8 +65,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onMapReady(@NonNull final MapboxMap mapboxMap){
         //Display the map with the appropriate style -- found on the mapbox styles site
         MainActivity.this.mapboxMap = mapboxMap;
-        //new Style.Builder().fromUri("mapbox://styles/aanprojectteam/ckg0ewsj31vsk19o83pshzome"
-        mapboxMap.setStyle(Style.MAPBOX_STREETS,
+        //new Style.Builder().fromUri("mapbox://styles/aanprojectteam/ckg0ewsj31vsk19o83pshzome")
+        mapboxMap.setStyle(new Style.Builder().fromUri("mapbox://styles/aanprojectteam/ckg0ewsj31vsk19o83pshzome"),
                 new Style.OnStyleLoaded(){
                     @Override
                     public void onStyleLoaded(@NonNull Style style) {
