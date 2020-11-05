@@ -19,7 +19,7 @@
             android:layout_width="138dp"
             android:layout_height="70dp"
             android:layout_alignParentTop="true"
-            android:layout_gravity="center|left"
+            android:layout_gravity="center|start"
             android:layout_marginStart="30dp"
             android:background="@color/mapbox_plugins_white"
             android:visibility="invisible"/>
