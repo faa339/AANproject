@@ -16,14 +16,16 @@
 
         <TextView
             android:id="@+id/LocationInfo"
-            android:layout_width="138dp"
-            android:layout_height="70dp"
+            android:layout_width="147dp"
+            android:layout_height="113dp"
             android:layout_alignParentTop="true"
             android:layout_gravity="center|start"
             android:layout_marginStart="30dp"
             android:background="@color/mapbox_plugins_white"
             android:visibility="invisible"/>
     </com.mapbox.mapboxsdk.maps.MapView>
+
+
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_location_search"
@@ -32,17 +34,19 @@
         android:layout_gravity="end|bottom"
         android:layout_margin="19dp"
         android:tint="@android:color/holo_purple"
+        android:scaleType="center"
         app:backgroundTint="@color/colorPrimary"
         app:srcCompat="@android:drawable/ic_search_category_default"
         app:fabCustomSize="70dp"/>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/navigate"
+        android:id="@+id/navigateswitch"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:layout_margin="19dp"
         android:tint="@android:color/holo_purple"
+        android:scaleType="center"
         android:visibility="invisible"
         app:backgroundTint="@color/colorPrimary"
         app:srcCompat="@drawable/ic_outline_navigation_24"

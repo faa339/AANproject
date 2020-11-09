@@ -3,16 +3,13 @@ package com.b31project.aanproject;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -20,7 +17,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.mapbox.android.core.permissions.PermissionsListener;
 import com.mapbox.android.core.permissions.PermissionsManager;
-import com.mapbox.api.directions.v5.models.RouteOptions;
+import com.mapbox.api.directions.v5.DirectionsCriteria;
+
 import com.mapbox.geojson.Feature;
 import com.mapbox.geojson.FeatureCollection;
 import com.mapbox.geojson.Point;
@@ -39,18 +37,25 @@ import com.mapbox.mapboxsdk.maps.Style;
 import com.mapbox.mapboxsdk.plugins.places.autocomplete.PlaceAutocomplete;
 import com.mapbox.mapboxsdk.plugins.places.autocomplete.model.PlaceOptions;
 import com.mapbox.mapboxsdk.style.layers.Layer;
+import com.mapbox.mapboxsdk.style.layers.LineLayer;
 import com.mapbox.mapboxsdk.style.layers.Property;
 import com.mapbox.mapboxsdk.style.layers.SymbolLayer;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 import com.mapbox.api.geocoding.v5.models.CarmenFeature;
-import com.mapbox.navigation.base.options.NavigationOptions;
-import com.mapbox.navigation.core.MapboxNavigation;
-import com.mapbox.navigation.core.MapboxNavigationProvider;
-import com.mapbox.navigation.core.directions.session.RoutesRequestCallback;
-import com.mapbox.navigation.ui.listeners.NavigationListener;
-import com.mapbox.services.android.location.LostLocationEngine;
-import com.mapbox.services.api.directions.v5.models.DirectionsRoute;
+import com.mapbox.services.android.navigation.ui.v5.NavigationLauncherOptions;
+import com.mapbox.services.android.navigation.ui.v5.route.NavigationMapRoute;
+import com.mapbox.services.android.navigation.v5.navigation.NavigationRoute;
+import com.mapbox.services.android.navigation.ui.v5.NavigationLauncher;
+import com.mapbox.api.directions.v5.models.DirectionsResponse;
+import com.mapbox.api.directions.v5.models.DirectionsRoute;
 
+import com.mapbox.services.Constants;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import timber.log.Timber;
+import android.util.Log;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconImage;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconOffset;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.visibility;
@@ -66,10 +71,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private PermissionsManager permManage;
     private String geojsonSourceLayerId = "geojsonSourceLayerId";
     private String symbolIconId = "symbolIconId";
+    private String symbolLayerId= "SYMBOL_LAYER_ID";
+    private String routeLayerId = "ROUTE_LAYER_ID";
+    private String routeSourceId = "ROUTE_SOURCE_ID";
     private static final int REQUEST_CODE_AUTOCOMPLETE = 1;
-    private String ORIGINCOLOR = "#751CCE";
-    private String DESTINATIONCOLOR = "#315EE0";
-    private MapboxNavigation navigator;
+    private Point origin;
+    private Point destination;
+    private DirectionsRoute currRoute;
+    private NavigationMapRoute navigationMapRoute;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,7 +94,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onMapReady(@NonNull final MapboxMap mapboxMap){
         //Display the map with the appropriate style -- found on the mapbox styles site
         MainActivity.this.mapboxMap = mapboxMap;
-        //new Style.Builder().fromUri("mapbox://styles/aanprojectteam/ckg0ewsj31vsk19o83pshzome")
         mapboxMap.setStyle(new Style.Builder().fromUri("mapbox://styles/aanprojectteam/ckg0ewsj31vsk19o83pshzome"),
                 new Style.OnStyleLoaded(){
                     @Override
@@ -97,15 +105,35 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         style.addSource(new GeoJsonSource(geojsonSourceLayerId));
                         style.addLayer(new SymbolLayer("SYMBOL_LAYER_ID", geojsonSourceLayerId)
                                 .withProperties(iconImage(symbolIconId), iconOffset(new Float[] {0f, -8f})));
+                        style.addLayer(new LineLayer(routeLayerId, routeSourceId));
                         TextView box = findViewById(R.id.LocationInfo);
+                        FloatingActionButton navBtn = findViewById(R.id.navigateswitch);
+
                         box.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
                                 int visibility = box.getVisibility();
                                 if(visibility != View.INVISIBLE){
                                     box.setVisibility(View.INVISIBLE);
-                                    Layer markerlayer = style.getLayer("SYMBOL_LAYER_ID");
+                                    Layer markerlayer = style.getLayer(symbolLayerId);
                                     markerlayer.setProperties(visibility(Property.NONE));
+                                    navBtn.setVisibility(View.INVISIBLE);
+                                    if (navigationMapRoute != null){
+                                        navigationMapRoute.removeRoute();
+                                    }
+                                }
+                            }
+                        });
+                        navBtn.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                //TODO: FIX THIS
+                                if (currRoute != null){
+                                    NavigationLauncherOptions options = NavigationLauncherOptions.builder()
+                                            .directionsRoute(currRoute)
+                                            .shouldSimulateRoute(true)
+                                            .build();
+                                    NavigationLauncher.startNavigation(MainActivity.this, options);
                                 }
                             }
                         });
@@ -113,12 +141,46 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 });
     }
 
+    private void getRoute(){
+        NavigationRoute.builder(MainActivity.this)
+                .accessToken(Mapbox.getAccessToken())
+                .origin(origin)
+                .destination(destination)
+                .profile(DirectionsCriteria.PROFILE_WALKING)
+                .build()
+                .getRoute(new Callback<DirectionsResponse>() {
+                    @Override
+                    public void onResponse(Call<DirectionsResponse> call, Response<DirectionsResponse> response) {
+                        if(response.body() == null){
+                            Timber.e("No routes found, make sure you set the right user and access token");
+                            return;
+                        }else if(response.body().routes().size()<1){
+                            Timber.e("No routes");
+                            return;
+                        }
+                        currRoute = response.body().routes().get(0);
+                        if (navigationMapRoute != null){
+                            navigationMapRoute.removeRoute();
+                        }else{
+                            navigationMapRoute = new NavigationMapRoute(null, mapView, mapboxMap, R.style.NavigationMapRoute);
+                        }
+                        navigationMapRoute.addRoute(currRoute);
+                    }
+
+                    @Override
+                    public void onFailure(Call<DirectionsResponse> call, Throwable t) {
+                        Timber.e("Error:" + t.getMessage());
+                    }
+                });
+    }
+
+
     private void initSearchBtn(){
         findViewById(R.id.fab_location_search).setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
                 Intent intent = new PlaceAutocomplete.IntentBuilder()
-                        .accessToken(getString(R.string.mapbox_access_token))
+                        .accessToken(Mapbox.getAccessToken())
                         .placeOptions(PlaceOptions.builder()
                                       .backgroundColor((Color.parseColor("#EEEEEE")))
                                       .limit(10)
@@ -129,9 +191,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
     }
 
-    private void initNavBtn(){
-
-    }
 
     @SuppressWarnings({"MissingPermission"})
     private void enableLocationComponent(@NonNull Style loadedMapStyle){
@@ -190,7 +249,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     if (source!=null){
                         source.setGeoJson(FeatureCollection.fromFeatures(new Feature[]
                                 {Feature.fromJson(selectedCarFeat.toJson())}));
-
                     }
                 }
                 mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(
@@ -200,11 +258,21 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                 .zoom(14)
                                 .build()), 4000);
                 TextView infobox = findViewById(R.id.LocationInfo);
-                FloatingActionButton navBtn = findViewById(R.id.navigate);
+                FloatingActionButton navBtn = findViewById(R.id.navigateswitch);
                 infobox.setText(selectedCarFeat.placeName());
                 infobox.setVisibility(View.VISIBLE);
                 Layer markerlayer = style.getLayer("SYMBOL_LAYER_ID");
                 markerlayer.setProperties(visibility(VISIBLE));
+                if (PermissionsManager.areLocationPermissionsGranted(MainActivity.this)) {
+                    LocationComponent locationComponent = mapboxMap.getLocationComponent();
+                    Location loc = locationComponent.getLastKnownLocation();
+                    origin = Point.fromLngLat(loc.getLongitude(), loc.getLatitude());
+                    destination = (Point) selectedCarFeat.geometry();
+                    getRoute();
+                    navBtn.setVisibility(View.VISIBLE);
+                }else{
+                    Timber.e("Something's wrong!");
+                }
             }
         }
     }
