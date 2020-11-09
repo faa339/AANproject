@@ -42,10 +42,9 @@ import com.mapbox.mapboxsdk.style.layers.Property;
 import com.mapbox.mapboxsdk.style.layers.SymbolLayer;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 import com.mapbox.api.geocoding.v5.models.CarmenFeature;
-import com.mapbox.services.android.navigation.ui.v5.NavigationLauncherOptions;
+import com.mapbox.services.android.navigation.ui.v5.NavigationViewOptions;
 import com.mapbox.services.android.navigation.ui.v5.route.NavigationMapRoute;
 import com.mapbox.services.android.navigation.v5.navigation.NavigationRoute;
-import com.mapbox.services.android.navigation.ui.v5.NavigationLauncher;
 import com.mapbox.api.directions.v5.models.DirectionsResponse;
 import com.mapbox.api.directions.v5.models.DirectionsRoute;
 
@@ -129,11 +128,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             public void onClick(View v) {
                                 //TODO: FIX THIS
                                 if (currRoute != null){
-                                    NavigationLauncherOptions options = NavigationLauncherOptions.builder()
-                                            .directionsRoute(currRoute)
-                                            .shouldSimulateRoute(true)
-                                            .build();
-                                    NavigationLauncher.startNavigation(MainActivity.this, options);
+//                                    NavigationViewOptions options = NavigationViewOptions.builder()
+//                                            .directionsRoute(currRoute)
+//                                            .shouldSimulateRoute(true)
+//                                            .build();
+                                    Intent intent = new Intent(MainActivity.this, Navigation.class);
+                                    intent.putExtra("currentRoute", currRoute.toJson());
+                                    MainActivity.this.startActivity(intent);
                                 }
                             }
                         });

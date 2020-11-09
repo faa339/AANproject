@@ -13,7 +13,6 @@
         app:layout_anchor="@+id/mapView"
         app:layout_anchorGravity="center"
         mapbox:mapbox_cameraZoom="12">
-
         <TextView
             android:id="@+id/LocationInfo"
             android:layout_width="147dp"
