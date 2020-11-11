@@ -42,13 +42,12 @@ import com.mapbox.mapboxsdk.style.layers.Property;
 import com.mapbox.mapboxsdk.style.layers.SymbolLayer;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 import com.mapbox.api.geocoding.v5.models.CarmenFeature;
-import com.mapbox.services.android.navigation.ui.v5.NavigationViewOptions;
+import com.mapbox.services.android.navigation.ui.v5.map.NavigationMapboxMap;
 import com.mapbox.services.android.navigation.ui.v5.route.NavigationMapRoute;
 import com.mapbox.services.android.navigation.v5.navigation.NavigationRoute;
 import com.mapbox.api.directions.v5.models.DirectionsResponse;
 import com.mapbox.api.directions.v5.models.DirectionsRoute;
 
-import com.mapbox.services.Constants;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -71,8 +70,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private String geojsonSourceLayerId = "geojsonSourceLayerId";
     private String symbolIconId = "symbolIconId";
     private String symbolLayerId= "SYMBOL_LAYER_ID";
-    private String routeLayerId = "ROUTE_LAYER_ID";
-    private String routeSourceId = "ROUTE_SOURCE_ID";
     private static final int REQUEST_CODE_AUTOCOMPLETE = 1;
     private Point origin;
     private Point destination;
@@ -102,9 +99,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         style.addImage(symbolIconId, BitmapFactory.decodeResource(
                                 MainActivity.this.getResources(), R.drawable.blue_marker_view));
                         style.addSource(new GeoJsonSource(geojsonSourceLayerId));
-                        style.addLayer(new SymbolLayer("SYMBOL_LAYER_ID", geojsonSourceLayerId)
+                        style.addLayer(new SymbolLayer(symbolLayerId, geojsonSourceLayerId)
                                 .withProperties(iconImage(symbolIconId), iconOffset(new Float[] {0f, -8f})));
-                        style.addLayer(new LineLayer(routeLayerId, routeSourceId));
                         TextView box = findViewById(R.id.LocationInfo);
                         FloatingActionButton navBtn = findViewById(R.id.navigateswitch);
 
@@ -128,10 +124,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             public void onClick(View v) {
                                 //TODO: FIX THIS
                                 if (currRoute != null){
-//                                    NavigationViewOptions options = NavigationViewOptions.builder()
-//                                            .directionsRoute(currRoute)
-//                                            .shouldSimulateRoute(true)
-//                                            .build();
                                     Intent intent = new Intent(MainActivity.this, Navigation.class);
                                     intent.putExtra("currentRoute", currRoute.toJson());
                                     MainActivity.this.startActivity(intent);
@@ -262,13 +254,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 FloatingActionButton navBtn = findViewById(R.id.navigateswitch);
                 infobox.setText(selectedCarFeat.placeName());
                 infobox.setVisibility(View.VISIBLE);
-                Layer markerlayer = style.getLayer("SYMBOL_LAYER_ID");
+                Layer markerlayer = style.getLayer(symbolLayerId);
                 markerlayer.setProperties(visibility(VISIBLE));
                 if (PermissionsManager.areLocationPermissionsGranted(MainActivity.this)) {
                     LocationComponent locationComponent = mapboxMap.getLocationComponent();
                     Location loc = locationComponent.getLastKnownLocation();
                     origin = Point.fromLngLat(loc.getLongitude(), loc.getLatitude());
-                    destination = (Point) selectedCarFeat.geometry();
+                    destination = Point.fromLngLat(((Point) selectedCarFeat.geometry()).longitude(),
+                                  ((Point) selectedCarFeat.geometry()).latitude());
                     getRoute();
                     navBtn.setVisibility(View.VISIBLE);
                 }else{

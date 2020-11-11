@@ -40,19 +40,9 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
-
-    implementation ('com.mapbox.mapboxsdk:mapbox-android-sdk:9.5.0')
     implementation 'com.mapbox.mapboxsdk:mapbox-sdk-services:5.7.0'
     implementation 'com.google.android.gms:play-services-location:17.1.0'
     implementation 'com.google.android.material:material:1.2.1'
     implementation 'com.mapbox.mapboxsdk:mapbox-android-plugin-places-v9:0.12.0'
-    implementation 'com.mapbox.mapboxsdk:mapbox-android-services:2.2.9'
-    implementation 'com.mapbox.mapboxsdk:mapbox-android-telemetry:6.1.0'
-    implementation 'com.mapbox.mapboxsdk:mapbox-android-navigation:0.42.6'
-    implementation ('com.mapbox.mapboxsdk:mapbox-android-navigation-ui:0.42.6'){
-        exclude group: 'com.mapbox.mapboxsdk', module:'mapbox-android-plugin-annotation-v8'
-    }
-    implementation "com.mapbox.navigation:ui:1.1.0"
-    implementation "com.mapbox.navigation:core:1.1.0"
-
+    implementation ('com.mapbox.mapboxsdk:mapbox-android-navigation-ui:0.42.6')
 }
