@@ -17,7 +17,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.mapbox.android.core.permissions.PermissionsListener;
 import com.mapbox.android.core.permissions.PermissionsManager;
-import com.mapbox.api.directions.v5.DirectionsCriteria;
 
 import com.mapbox.geojson.Feature;
 import com.mapbox.geojson.FeatureCollection;
@@ -37,23 +36,15 @@ import com.mapbox.mapboxsdk.maps.Style;
 import com.mapbox.mapboxsdk.plugins.places.autocomplete.PlaceAutocomplete;
 import com.mapbox.mapboxsdk.plugins.places.autocomplete.model.PlaceOptions;
 import com.mapbox.mapboxsdk.style.layers.Layer;
-import com.mapbox.mapboxsdk.style.layers.LineLayer;
 import com.mapbox.mapboxsdk.style.layers.Property;
 import com.mapbox.mapboxsdk.style.layers.SymbolLayer;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 import com.mapbox.api.geocoding.v5.models.CarmenFeature;
-import com.mapbox.services.android.navigation.ui.v5.map.NavigationMapboxMap;
-import com.mapbox.services.android.navigation.ui.v5.route.NavigationMapRoute;
-import com.mapbox.services.android.navigation.v5.navigation.NavigationRoute;
-import com.mapbox.api.directions.v5.models.DirectionsResponse;
-import com.mapbox.api.directions.v5.models.DirectionsRoute;
 
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
+
 import timber.log.Timber;
-import android.util.Log;
+
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconImage;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconOffset;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.visibility;
@@ -73,8 +64,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private static final int REQUEST_CODE_AUTOCOMPLETE = 1;
     private Point origin;
     private Point destination;
-    private DirectionsRoute currRoute;
-    private NavigationMapRoute navigationMapRoute;
+//    private NavigationMapRoute navigationMapRoute;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -113,60 +103,24 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                     Layer markerlayer = style.getLayer(symbolLayerId);
                                     markerlayer.setProperties(visibility(Property.NONE));
                                     navBtn.setVisibility(View.INVISIBLE);
-                                    if (navigationMapRoute != null){
-                                        navigationMapRoute.removeRoute();
-                                    }
+//                                    if (navigationMapRoute != null){
+//                                        navigationMapRoute.removeRoute();
+//                                    }
                                 }
                             }
                         });
                         navBtn.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                //TODO: FIX THIS
-                                if (currRoute != null){
-                                    Intent intent = new Intent(MainActivity.this, Navigation.class);
-                                    intent.putExtra("currentRoute", currRoute.toJson());
-                                    MainActivity.this.startActivity(intent);
-                                }
+                                Intent intent = new Intent(MainActivity.this, Navigation.class);
+                                intent.putExtra("origin", origin.toJson());
+                                intent.putExtra("destination", destination.toJson());
+                                MainActivity.this.startActivity(intent);
                             }
                         });
                     }
                 });
     }
-
-    private void getRoute(){
-        NavigationRoute.builder(MainActivity.this)
-                .accessToken(Mapbox.getAccessToken())
-                .origin(origin)
-                .destination(destination)
-                .profile(DirectionsCriteria.PROFILE_WALKING)
-                .build()
-                .getRoute(new Callback<DirectionsResponse>() {
-                    @Override
-                    public void onResponse(Call<DirectionsResponse> call, Response<DirectionsResponse> response) {
-                        if(response.body() == null){
-                            Timber.e("No routes found, make sure you set the right user and access token");
-                            return;
-                        }else if(response.body().routes().size()<1){
-                            Timber.e("No routes");
-                            return;
-                        }
-                        currRoute = response.body().routes().get(0);
-                        if (navigationMapRoute != null){
-                            navigationMapRoute.removeRoute();
-                        }else{
-                            navigationMapRoute = new NavigationMapRoute(null, mapView, mapboxMap, R.style.NavigationMapRoute);
-                        }
-                        navigationMapRoute.addRoute(currRoute);
-                    }
-
-                    @Override
-                    public void onFailure(Call<DirectionsResponse> call, Throwable t) {
-                        Timber.e("Error:" + t.getMessage());
-                    }
-                });
-    }
-
 
     private void initSearchBtn(){
         findViewById(R.id.fab_location_search).setOnClickListener(new View.OnClickListener(){
@@ -262,7 +216,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     origin = Point.fromLngLat(loc.getLongitude(), loc.getLatitude());
                     destination = Point.fromLngLat(((Point) selectedCarFeat.geometry()).longitude(),
                                   ((Point) selectedCarFeat.geometry()).latitude());
-                    getRoute();
                     navBtn.setVisibility(View.VISIBLE);
                 }else{
                     Timber.e("Something's wrong!");

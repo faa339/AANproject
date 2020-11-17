@@ -13,16 +13,16 @@
         app:layout_anchor="@+id/mapView"
         app:layout_anchorGravity="center"
         mapbox:mapbox_cameraZoom="12">
-        <TextView
-            android:id="@+id/LocationInfo"
-            android:layout_width="147dp"
-            android:layout_height="113dp"
-            android:layout_alignParentTop="true"
-            android:layout_gravity="center|start"
-            android:layout_marginStart="30dp"
-            android:background="@color/mapbox_plugins_white"
-            android:visibility="invisible"/>
     </com.mapbox.mapboxsdk.maps.MapView>
+    <TextView
+        android:id="@+id/LocationInfo"
+        android:layout_width="147dp"
+        android:layout_height="113dp"
+        android:layout_alignParentTop="true"
+        android:layout_gravity="center|start"
+        android:layout_marginStart="30dp"
+        android:background="@color/mapbox_plugins_white"
+        android:visibility="invisible"/>
 
 
 
