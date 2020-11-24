@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "995862097100",
+    "firebase_url": "https://access-accessible-navigation.firebaseio.com",
+    "project_id": "access-accessible-navigation",
+    "storage_bucket": "access-accessible-navigation.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:995862097100:android:073cb3025fcb8a15d9a669",
+        "android_client_info": {
+          "package_name": "com.b31project.aanproject"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "995862097100-8l93urtdgu9f2oj9l0fkgup26apb683s.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBlOMJ0z7_X12gJt8WJ3zeAqY0RsgoR0fM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "995862097100-8l93urtdgu9f2oj9l0fkgup26apb683s.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
