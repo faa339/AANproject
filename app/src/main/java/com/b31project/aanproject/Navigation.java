@@ -4,10 +4,12 @@ package com.b31project.aanproject;
 import android.content.Intent;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.mapbox.api.directions.v5.DirectionsCriteria;
 import com.mapbox.api.directions.v5.MapboxDirections;
+import com.mapbox.api.directions.v5.models.BannerInstructions;
 import com.mapbox.api.directions.v5.models.DirectionsResponse;
 import com.mapbox.mapboxsdk.Mapbox;
 
@@ -18,14 +20,21 @@ import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.api.directions.v5.models.DirectionsRoute;
 import com.mapbox.navigation.base.internal.VoiceUnit;
 
+import com.mapbox.navigation.base.trip.model.RouteProgress;
+import com.mapbox.navigation.core.trip.session.RouteProgressObserver;
 import com.mapbox.navigation.ui.NavigationView;
 import com.mapbox.navigation.ui.NavigationViewOptions;
 import com.mapbox.navigation.ui.OnNavigationReadyCallback;
 import com.mapbox.geojson.Point;
 
+import com.mapbox.navigation.ui.listeners.BannerInstructionsListener;
 import com.mapbox.navigation.ui.listeners.NavigationListener;
 import com.mapbox.navigation.ui.map.NavigationMapboxMap;
 
+
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Locale;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -61,6 +70,7 @@ public class Navigation extends AppCompatActivity implements OnNavigationReadyCa
     @Override
     public void onNavigationReady(boolean isRunning) {
         navigationMapboxMap = navigationView.retrieveNavigationMapboxMap();
+
         getRoute(origin,destination);
     }
 
@@ -74,6 +84,9 @@ public class Navigation extends AppCompatActivity implements OnNavigationReadyCa
                 .profile(DirectionsCriteria.PROFILE_WALKING)
                 .voiceInstructions(true)
                 .voiceUnits(VoiceUnit.IMPERIAL)
+                .bannerInstructions(true)
+                .steps(true)
+                .language(Locale.ENGLISH)
                 .build();
         directions.enqueueCall(this);
     }
@@ -94,6 +107,13 @@ public class Navigation extends AppCompatActivity implements OnNavigationReadyCa
         NavigationViewOptions navigationViewOptions = NavigationViewOptions.builder(this)
                 .navigationListener(this)
                 .directionsRoute(currRoute)
+                .bannerInstructionsListener(new BannerInstructionsListener() {
+                    @NonNull
+                    @Override
+                    public BannerInstructions willDisplay(BannerInstructions instructions) {
+                        return instructions;
+                    }
+                })
                 .build();
 
         navigationView.startNavigation(navigationViewOptions);

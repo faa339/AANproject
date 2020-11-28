@@ -2,7 +2,9 @@ package com.b31project.aanproject;
 
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.location.Location;
@@ -64,17 +66,35 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private static final int REQUEST_CODE_AUTOCOMPLETE = 1;
     private Point origin;
     private Point destination;
-//    private NavigationMapRoute navigationMapRoute;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         //Load the mapview, create evrything needed
         super.onCreate(savedInstanceState);
+
+        SharedPreferences preferences = getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        if(FirstTime(preferences, editor)){
+            //Switch activities to the preferences screen
+            Toast.makeText(this, "First time!", Toast.LENGTH_SHORT).show();
+        }
+
         Mapbox.getInstance(this, getString(R.string.mapbox_access_token));
         setContentView(R.layout.activity_main);
         mapView = findViewById(R.id.mapView);
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(this);
+    }
+
+    public boolean FirstTime(SharedPreferences prefs, SharedPreferences.Editor editor){
+        if(prefs.getBoolean("FirstTime", true)){
+            editor.putBoolean("FirstTime", false);
+            editor.commit();
+            editor.apply();
+            return true;
+        }else{
+            return false;
+        }
     }
 
     public void onMapReady(@NonNull final MapboxMap mapboxMap){
@@ -103,9 +123,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                     Layer markerlayer = style.getLayer(symbolLayerId);
                                     markerlayer.setProperties(visibility(Property.NONE));
                                     navBtn.setVisibility(View.INVISIBLE);
-//                                    if (navigationMapRoute != null){
-//                                        navigationMapRoute.removeRoute();
-//                                    }
                                 }
                             }
                         });
@@ -161,7 +178,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onExplanationNeeded(List<String> permissionsToExplain) {
-        Toast.makeText(this, "We need your permission to access your location.", Toast.LENGTH_LONG).show();
+        Toast.makeText(this, "Permission Granted!", Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -175,6 +192,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             });
         }else{
             Toast.makeText(this, "Location permission not granted.", Toast.LENGTH_LONG).show();
+            finish();
         }
     }
 
