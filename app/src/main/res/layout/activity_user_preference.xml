@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".UserPreference">
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="86dp"
+        android:layout_height="28dp"
+        android:text="Username:"
+        android:textColor="#000000"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toStartOf="@+id/guideline2"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline8" />
+
+    <CheckBox
+        android:id="@+id/notAllRoute"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="18dp"
+        android:text="Not All"
+        android:textSize="18sp"
+        app:layout_constraintStart_toStartOf="@+id/allRoute"
+        app:layout_constraintTop_toBottomOf="@+id/allRoute" />
+
+    <CheckBox
+        android:id="@+id/voice"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Voice"
+        android:textSize="18sp"
+        app:layout_constraintStart_toStartOf="@+id/notAllRoute"
+        app:layout_constraintTop_toTopOf="@+id/textView3" />
+
+    <CheckBox
+        android:id="@+id/allRoute"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="All"
+        android:textSize="18sp"
+        app:layout_constraintStart_toStartOf="@+id/PersonName"
+        app:layout_constraintTop_toTopOf="@+id/textView2" />
+
+    <EditText
+        android:id="@+id/PersonName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:hint="Your Name"
+        android:textColorHint="#858484"
+        app:layout_constraintBottom_toBottomOf="@+id/textView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.529"
+        app:layout_constraintStart_toStartOf="@+id/guideline2"
+        app:layout_constraintTop_toTopOf="@+id/textView" />
+
+    <CheckBox
+        android:id="@+id/haptic"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="18dp"
+        android:text="Haptic"
+        android:textSize="18sp"
+        app:layout_constraintStart_toStartOf="@+id/voice"
+        app:layout_constraintTop_toBottomOf="@+id/voice" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="99dp"
+        android:layout_height="30dp"
+        android:text="Route Type:"
+        android:textColor="#000000"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="@+id/textView"
+        app:layout_constraintTop_toTopOf="@+id/guideline9" />
+
+    <CheckBox
+        android:id="@+id/largerText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="18dp"
+        android:text="Larger Text"
+        android:textSize="24sp"
+        app:layout_constraintStart_toStartOf="@+id/haptic"
+        app:layout_constraintTop_toBottomOf="@+id/haptic" />
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="106dp"
+        android:layout_height="55dp"
+        android:text="Accessibility Preference:"
+        android:textColor="#000000"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="@+id/textView2"
+        app:layout_constraintTop_toTopOf="@+id/guideline10" />
+
+    <Button
+        android:id="@+id/confirm_button"
+        android:layout_width="132dp"
+        android:layout_height="58dp"
+        android:backgroundTint="#07D9F4"
+        android:text="Confirm"
+        android:textColor="#FFFFFF"
+        android:textColorHint="#00BCD4"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline7"
+        app:layout_constraintTop_toTopOf="@+id/guideline11" />
+
+    <Button
+        android:id="@+id/reset_button"
+        android:layout_width="132dp"
+        android:layout_height="58dp"
+        android:text="reset"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toStartOf="@+id/guideline7"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline11" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.4" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline7"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.5" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline8"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.18" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline9"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.32" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline10"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.49" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline11"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.75" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
