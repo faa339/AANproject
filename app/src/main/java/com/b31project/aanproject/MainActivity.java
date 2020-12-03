@@ -10,12 +10,13 @@ import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
+
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.database.DataSnapshot;
@@ -26,6 +27,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.mapbox.android.core.permissions.PermissionsListener;
 import com.mapbox.android.core.permissions.PermissionsManager;
 import com.mapbox.api.geocoding.v5.models.CarmenFeature;
+
 import com.mapbox.geojson.Feature;
 import com.mapbox.geojson.FeatureCollection;
 import com.mapbox.geojson.Point;
@@ -47,6 +49,14 @@ import com.mapbox.mapboxsdk.style.layers.Layer;
 import com.mapbox.mapboxsdk.style.layers.Property;
 import com.mapbox.mapboxsdk.style.layers.SymbolLayer;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
+
+import com.mapbox.api.geocoding.v5.models.CarmenFeature;
+import timber.log.Timber;
+
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconImage;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconOffset;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.visibility;
+import static com.mapbox.mapboxsdk.style.layers.Property.VISIBLE;
 
 import java.sql.Time;
 import java.util.ArrayList;
@@ -77,7 +87,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     final FirebaseDatabase database = FirebaseDatabase.getInstance();
     String feature ="";
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -237,6 +246,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 TextView infobox = findViewById(R.id.LocationInfo);
                 FloatingActionButton navBtn = findViewById(R.id.navigateswitch);
 
+
                 //-------------------Start of Database Data Retrieval---------------
                 //GOAL: Modify the infobox with accessibility data in a location
                 //Make method to retrieve any database information on a building and store in ArrayList
@@ -281,6 +291,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         }
     }
+
     private interface FirebaseCallback {
         void onCallback(String value);
     }
@@ -332,6 +343,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             return message;
         }
     }
+
 
     @Override
     protected void onStart() {
