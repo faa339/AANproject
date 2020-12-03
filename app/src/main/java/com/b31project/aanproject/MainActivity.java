@@ -9,6 +9,8 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
+import android.util.Log;
+
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -17,8 +19,14 @@ import androidx.appcompat.app.AppCompatActivity;
 
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.mapbox.android.core.permissions.PermissionsListener;
 import com.mapbox.android.core.permissions.PermissionsManager;
+import com.mapbox.api.geocoding.v5.models.CarmenFeature;
 
 import com.mapbox.geojson.Feature;
 import com.mapbox.geojson.FeatureCollection;
@@ -41,10 +49,8 @@ import com.mapbox.mapboxsdk.style.layers.Layer;
 import com.mapbox.mapboxsdk.style.layers.Property;
 import com.mapbox.mapboxsdk.style.layers.SymbolLayer;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
+
 import com.mapbox.api.geocoding.v5.models.CarmenFeature;
-
-
-
 import timber.log.Timber;
 
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconImage;
@@ -52,7 +58,19 @@ import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconOffset;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.visibility;
 import static com.mapbox.mapboxsdk.style.layers.Property.VISIBLE;
 
+import java.sql.Time;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import timber.log.Timber;
+
+import static com.mapbox.mapboxsdk.style.layers.Property.VISIBLE;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconImage;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconOffset;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.visibility;
 
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback,
@@ -60,12 +78,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private MapView mapView;
     private MapboxMap mapboxMap;
     private PermissionsManager permManage;
-    private String geojsonSourceLayerId = "geojsonSourceLayerId";
-    private String symbolIconId = "symbolIconId";
-    private String symbolLayerId= "SYMBOL_LAYER_ID";
+    private final String geojsonSourceLayerId = "geojsonSourceLayerId";
+    private final String symbolIconId = "symbolIconId";
+    private final String symbolLayerId= "SYMBOL_LAYER_ID";
     private static final int REQUEST_CODE_AUTOCOMPLETE = 1;
     private Point origin;
     private Point destination;
+
+    final FirebaseDatabase database = FirebaseDatabase.getInstance();
+    String feature ="";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -224,7 +245,36 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                 .build()), 4000);
                 TextView infobox = findViewById(R.id.LocationInfo);
                 FloatingActionButton navBtn = findViewById(R.id.navigateswitch);
-                infobox.setText(selectedCarFeat.placeName());
+
+
+                //-------------------Start of Database Data Retrieval---------------
+                //GOAL: Modify the infobox with accessibility data in a location
+                //Make method to retrieve any database information on a building and store in ArrayList
+                //String accessibilityData = getDBLocation(selectedCarFeat.placeName().toUpperCase());
+
+
+                //Retrieve references to the data in the database.
+                String LocationInfo = selectedCarFeat.placeName().toUpperCase();
+                String city = LocationInfo.split(",")[1];
+                city = String.copyValueOf(city.toCharArray(), 1, city.length()-1);
+                LocationInfo = String.join("" , Arrays.copyOfRange(LocationInfo.split(","),0,3));
+
+                DatabaseReference reference = database.getReference("LOCATIONS").child(city).child(LocationInfo);
+
+                //Get data from the references and compare against the LocationName that we are looking for
+                //Once/if a match is found, then return the accessibility info.
+
+                ArrayList<String> features = new ArrayList<>();
+                readData(new FirebaseCallback() {
+                    @Override
+                    public void onCallback(String value) {
+                        features.add(LogUtils.LOGD("MainActivity/getDBLocation/readData/onCallback", feature));
+                        infobox.setText(selectedCarFeat.placeName() + "\nFeature(s):" + feature);
+                        infobox.invalidate();
+                    }
+                }, reference);
+                Log.d("MainActivity/onActivityResult", "Before infobox is visible, feature =" + feature);
+                infobox.setText(selectedCarFeat.placeName() + '\n' + feature);
                 infobox.setVisibility(View.VISIBLE);
                 Layer markerlayer = style.getLayer(symbolLayerId);
                 markerlayer.setProperties(visibility(VISIBLE));
@@ -241,6 +291,59 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         }
     }
+
+    private interface FirebaseCallback {
+        void onCallback(String value);
+    }
+    private void readData(FirebaseCallback myCallback, DatabaseReference databaseReference) {
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                if (snapshot.child("FEATURE").exists()) {
+                    feature = snapshot.child("FEATURE").getValue(String.class);
+                    Log.d("MainActivity/getDBLocation/readData/ValueEventListener", "set feature to " + feature);
+                }
+                myCallback.onCallback(feature);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {}
+        });
+    }
+    //Gets database information on accessibility
+    public String getDBLocation(String LocationInfo) {
+        //Retrieve references to the data in the database.
+
+        String city = LocationInfo.split(",")[1];
+        city = String.copyValueOf(city.toCharArray(), 1, city.length()-1);
+        LocationInfo = String.join("" , Arrays.copyOfRange(LocationInfo.split(","),0,3));
+
+        DatabaseReference reference = database.getReference("LOCATIONS").child(city).child(LocationInfo);
+
+        //Get data from the references and compare against the LocationName that we are looking for
+        //Once/if a match is found, then return the accessibility info.
+
+        ArrayList<String> features = new ArrayList<>();
+
+        readData(new FirebaseCallback() {
+            @Override
+            public void onCallback(String value) {
+                features.add(LogUtils.LOGD("MainActivity/getDBLocation/readData/onCallback", feature));
+            }
+        }, reference);
+
+        Log.d("MainActivity/getDBLocation", "Before return, feature is set to " + feature);
+        return feature;
+    }
+
+    public static class LogUtils {
+
+        public static String LOGD(String tag, String message) {
+            Log.d(tag, message);
+            return message;
+        }
+    }
+
 
     @Override
     protected void onStart() {
