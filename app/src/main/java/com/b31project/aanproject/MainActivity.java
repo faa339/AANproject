@@ -51,6 +51,9 @@ import com.mapbox.mapboxsdk.style.layers.SymbolLayer;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 
 import com.mapbox.api.geocoding.v5.models.CarmenFeature;
+
+import org.json.JSONObject;
+
 import timber.log.Timber;
 
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconImage;
@@ -58,10 +61,12 @@ import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconOffset;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.visibility;
 import static com.mapbox.mapboxsdk.style.layers.Property.VISIBLE;
 
+import java.io.File;
 import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Scanner;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -84,7 +89,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private static final int REQUEST_CODE_AUTOCOMPLETE = 1;
     private Point origin;
     private Point destination;
-
+    private User thisUser;
     final FirebaseDatabase database = FirebaseDatabase.getInstance();
     String feature ="";
 
@@ -92,13 +97,16 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void onCreate(Bundle savedInstanceState) {
         //Load the mapview, create evrything needed
         super.onCreate(savedInstanceState);
-
+        Timber.plant(new Timber.DebugTree());
         SharedPreferences preferences = getPreferences(Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
+        //If first time, create the pref file then load it in thru the User class
         if(FirstTime(preferences, editor)){
-            //Switch activities to the preferences screen
-            Toast.makeText(this, "First time!", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(this, UserPreference.class);
+            MainActivity.this.startActivity(intent);
         }
+        String path = getFilesDir().getAbsolutePath() + File.separator + "userPrefs.json";
+        thisUser = User.getInstance(path);
 
         Mapbox.getInstance(this, getString(R.string.mapbox_access_token));
         setContentView(R.layout.activity_main);
@@ -107,6 +115,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mapView.getMapAsync(this);
     }
 
+    //Check the sharedprefs to see if theres been a cold start
     public boolean FirstTime(SharedPreferences prefs, SharedPreferences.Editor editor){
         if(prefs.getBoolean("FirstTime", true)){
             editor.putBoolean("FirstTime", false);
@@ -124,6 +133,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mapboxMap.setStyle(new Style.Builder().fromUri("mapbox://styles/aanprojectteam/ckg0ewsj31vsk19o83pshzome"),
                 new Style.OnStyleLoaded(){
                     @Override
+                    //Functions for map interaction, general functionality, look and feel
                     public void onStyleLoaded(@NonNull Style style) {
                         enableLocationComponent(style);
                         initSearchBtn();
@@ -137,6 +147,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                         box.setOnClickListener(new View.OnClickListener() {
                             @Override
+                            //If you click the textbox, it disappears
                             public void onClick(View v) {
                                 int visibility = box.getVisibility();
                                 if(visibility != View.INVISIBLE){
@@ -149,6 +160,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         });
                         navBtn.setOnClickListener(new View.OnClickListener() {
                             @Override
+                            //Start navigation -- activity switch to Navigation.java
                             public void onClick(View v) {
                                 Intent intent = new Intent(MainActivity.this, Navigation.class);
                                 intent.putExtra("origin", origin.toJson());
@@ -160,6 +172,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 });
     }
 
+    //initialize the listener needed to do search with autocomplete
     private void initSearchBtn(){
         findViewById(R.id.fab_location_search).setOnClickListener(new View.OnClickListener(){
             @Override
@@ -179,7 +192,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @SuppressWarnings({"MissingPermission"})
     private void enableLocationComponent(@NonNull Style loadedMapStyle){
-        //Enable user location if it can find it already enables, else ask to use permissions
+        //Enable using user location -- request if not already determined to be enabled
         if (PermissionsManager.areLocationPermissionsGranted(this)) {
             LocationComponent locationComponent = mapboxMap.getLocationComponent();
             locationComponent.activateLocationComponent(LocationComponentActivationOptions.builder(this, loadedMapStyle).build());
@@ -194,6 +207,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        //Handle getting the location (or not -- for current purposes, can only function with user location)
         permManage.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
@@ -213,7 +227,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             });
         }else{
             Toast.makeText(this, "Location permission not granted.", Toast.LENGTH_LONG).show();
-            finish();
         }
     }
 
@@ -274,7 +287,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     }
                 }, reference);
                 Log.d("MainActivity/onActivityResult", "Before infobox is visible, feature =" + feature);
-                infobox.setText(selectedCarFeat.placeName() + '\n' + feature);
+                String PlaceInfo = selectedCarFeat.placeName() + '\n' + feature;
+                if(thisUser.LargeText)
+                    infobox.setTextSize(18);
+                infobox.setText(PlaceInfo);
                 infobox.setVisibility(View.VISIBLE);
                 Layer markerlayer = style.getLayer(symbolLayerId);
                 markerlayer.setProperties(visibility(VISIBLE));
@@ -344,7 +360,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-
+    //General functions for activity lifecycle
     @Override
     protected void onStart() {
         super.onStart();

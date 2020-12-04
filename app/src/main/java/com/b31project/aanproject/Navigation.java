@@ -11,6 +11,7 @@ import com.mapbox.api.directions.v5.DirectionsCriteria;
 import com.mapbox.api.directions.v5.MapboxDirections;
 import com.mapbox.api.directions.v5.models.BannerInstructions;
 import com.mapbox.api.directions.v5.models.DirectionsResponse;
+import com.mapbox.api.directions.v5.models.VoiceInstructions;
 import com.mapbox.mapboxsdk.Mapbox;
 
 import com.mapbox.mapboxsdk.camera.CameraPosition;
@@ -21,7 +22,9 @@ import com.mapbox.api.directions.v5.models.DirectionsRoute;
 import com.mapbox.navigation.base.internal.VoiceUnit;
 
 import com.mapbox.navigation.base.trip.model.RouteProgress;
+import com.mapbox.navigation.core.MapboxNavigation;
 import com.mapbox.navigation.core.trip.session.RouteProgressObserver;
+import com.mapbox.navigation.core.trip.session.VoiceInstructionsObserver;
 import com.mapbox.navigation.ui.NavigationView;
 import com.mapbox.navigation.ui.NavigationViewOptions;
 import com.mapbox.navigation.ui.OnNavigationReadyCallback;
@@ -29,11 +32,13 @@ import com.mapbox.geojson.Point;
 
 import com.mapbox.navigation.ui.listeners.BannerInstructionsListener;
 import com.mapbox.navigation.ui.listeners.NavigationListener;
+import com.mapbox.navigation.ui.listeners.SpeechAnnouncementListener;
 import com.mapbox.navigation.ui.map.NavigationMapboxMap;
 
 
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.util.Locale;
 
 import retrofit2.Call;
@@ -49,6 +54,7 @@ public class Navigation extends AppCompatActivity implements OnNavigationReadyCa
       private Point origin;
       private Point destination;
       private DirectionsRoute currRoute;
+      private User thisUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +66,8 @@ public class Navigation extends AppCompatActivity implements OnNavigationReadyCa
         Intent intent = getIntent();
         origin = Point.fromJson(intent.getStringExtra("origin"));
         destination = Point.fromJson(intent.getStringExtra("destination"));
+        String path = getFilesDir().getAbsolutePath() + File.separator + "userPrefs.json";
+        thisUser = User.getInstance(path);
         navigationView.initialize(this, new CameraPosition.Builder()
                 .zoom(16)
                 .tilt(5)
@@ -70,11 +78,11 @@ public class Navigation extends AppCompatActivity implements OnNavigationReadyCa
     @Override
     public void onNavigationReady(boolean isRunning) {
         navigationMapboxMap = navigationView.retrieveNavigationMapboxMap();
-
         getRoute(origin,destination);
     }
 
     private void getRoute(Point origin, Point destination){
+        //Get our route with all required options
         MapboxDirections directions = MapboxDirections.builder()
                 .accessToken(getString(R.string.mapbox_access_token))
                 .origin(origin)
@@ -82,7 +90,7 @@ public class Navigation extends AppCompatActivity implements OnNavigationReadyCa
                 .steps(true)
                 .overview(DirectionsCriteria.OVERVIEW_FULL)
                 .profile(DirectionsCriteria.PROFILE_WALKING)
-                .voiceInstructions(true)
+                .voiceInstructions(thisUser.VoiceInstruct)
                 .voiceUnits(VoiceUnit.IMPERIAL)
                 .bannerInstructions(true)
                 .steps(true)
