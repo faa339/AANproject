@@ -1,4 +1,4 @@
 <resources>
     <string name="app_name">AANproject</string>
-    <string name="mapbox_access_token">pk.eyJ1IjoiYWFucHJvamVjdHRlYW0iLCJhIjoiY2tnMDhvcjJ6MHJ1YzJ3cXNwOXQ3anQxMiJ9.1kjiYFKrFChVFJQw1G9Tyw</string>
+    <string name="mapbox_access_token"></string>
 </resources>
